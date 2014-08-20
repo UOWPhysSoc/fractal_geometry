@@ -5,7 +5,7 @@ from math import *
 
 
 class Square():
-    def __init__(self, a, b, c, d, order=0, chaos=0):
+    def __init__(self, corners, order=0, chaos=0):
         """
         Data structure for squares in the Diamond Square Algorithm
 
@@ -19,7 +19,7 @@ class Square():
         #Square data
         self.order = order
         self.chaos = chaos
-        self.heights = [float(a), float(b), float(c), float(d)]
+        self.heights = list(map(float, corners))
         self.sub_squares = []
 
         #Stochastic variables
@@ -36,40 +36,40 @@ class Square():
 
         # Top left square generation
         self.sub_squares.append(Square(
-            self.heights[0],
+            [self.heights[0],
             0.5 * (self.heights[0] + self.heights[1]),
             0.5 * (self.heights[0] + self.heights[2]),
-            0.25 * sum(self.heights) + (self.random_scalar * self.random),
+            0.25 * sum(self.heights) + (self.random_scalar * self.random)],
             self.order + 1,
             self.chaos
         ))
 
         # Top right square generation
         self.sub_squares.append(Square(
-            0.5 * (self.heights[0] + self.heights[1]),
+            [0.5 * (self.heights[0] + self.heights[1]),
             self.heights[1],
             0.25 * sum(self.heights) + (self.random_scalar * self.random),
-            0.5 * (self.heights[1] + self.heights[3]),
+            0.5 * (self.heights[1] + self.heights[3])],
             self.order + 1,
             self.chaos
         ))
 
         # Bottom left square generation
         self.sub_squares.append(Square(
-            0.5 * (self.heights[0] + self.heights[2]),
+            [0.5 * (self.heights[0] + self.heights[2]),
             0.25 * sum(self.heights) + + (self.random_scalar * self.random),
             self.heights[2],
-            0.5 * (self.heights[2] + self.heights[3]),
+            0.5 * (self.heights[2] + self.heights[3])],
             self.order + 1,
             self.chaos
         ))
 
         # Bottom right square generation
         self.sub_squares.append(Square(
-            0.25 * sum(self.heights) + self.random_scalar + (self.random_scalar * self.random),
+            [0.25 * sum(self.heights) + self.random_scalar + (self.random_scalar * self.random),
             0.5 * (self.heights[1] + self.heights[3]),
             0.5 * (self.heights[2] + self.heights[3]),
-            self.heights[3],
+            self.heights[3]],
             self.order + 1,
             self.chaos
         ))
@@ -86,7 +86,7 @@ class Generator():
         #Repository for final height map
         self.map_array = []
         #Generate Terrain
-        self.terrain = Square(0, 0, 0, 0, chaos=c)
+        self.terrain = Square([0,0,0,0], chaos=c)
         #Collect final data from external variable
         self.final_squares = final_squares
         for i in range(iterations):
