@@ -57,7 +57,7 @@ class Square():
         # Bottom left square generation
         self.sub_squares.append(Square(
             [0.5 * (self.heights[0] + self.heights[2]),
-            0.25 * sum(self.heights) + + (self.random_scalar * self.random),
+            0.25 * sum(self.heights) + (self.random_scalar * self.random),
             self.heights[2],
             0.5 * (self.heights[2] + self.heights[3])],
             self.order + 1,
@@ -66,7 +66,7 @@ class Square():
 
         # Bottom right square generation
         self.sub_squares.append(Square(
-            [0.25 * sum(self.heights) + self.random_scalar + (self.random_scalar * self.random),
+            [0.25 * sum(self.heights) + (self.random_scalar * self.random),
             0.5 * (self.heights[1] + self.heights[3]),
             0.5 * (self.heights[2] + self.heights[3]),
             self.heights[3]],
