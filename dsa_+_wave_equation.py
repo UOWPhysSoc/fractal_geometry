@@ -57,7 +57,7 @@ class Square():
         # Bottom left square generation
         self.sub_squares.append(Square(
             [0.5 * (self.heights[0] + self.heights[2]),
-            0.25 * sum(self.heights) + + (self.random_scalar * self.random),
+            0.25 * sum(self.heights) + (self.random_scalar * self.random),
             self.heights[2],
             0.5 * (self.heights[2] + self.heights[3])],
             self.order + 1,
@@ -66,7 +66,7 @@ class Square():
 
         # Bottom right square generation
         self.sub_squares.append(Square(
-            [0.25 * sum(self.heights) + self.random_scalar + (self.random_scalar * self.random),
+            [0.25 * sum(self.heights) + (self.random_scalar * self.random),
             0.5 * (self.heights[1] + self.heights[3]),
             0.5 * (self.heights[2] + self.heights[3]),
             self.heights[3]],
@@ -153,6 +153,22 @@ class Waves():
         self.xdim = len(self.initdata)
         self.ydim = len(self.initdata[0])
         self.points = []
+
+
+        """Adds option for fixed edges. Not 100% sure how to set it up to pass a bool into the class,
+        that'd probably be the best way to do this."""
+        
+        self.fixed_edges = True
+        
+        if self.fixed_edges == False:
+            self.A = 0
+            self.B = self.xdim
+            self.C = self.ydim
+        else:
+            self.A = 1
+            self.B = self.xdim - 1
+            self.C = self.ydim - 1
+        
         self.gen_grid()
 
     def gen_grid(self):
@@ -163,10 +179,10 @@ class Waves():
             self.points.append(temp)
 
     def acc_update(self):
-        for i in range(1, self.xdim-1):
-            for j in range(1, self.ydim-1):
-                accx = (self.points[i][j+1].pos.z - 2*self.points[i][j].pos.z +self.points[i][j-1].pos.z)/self.dx**2
-                accy = (self.points[i+1][j].pos.z - 2*self.points[i][j].pos.z +self.points[i-1][j].pos.z)/self.dx**2
+        for i in range(self.A, self.B):
+            for j in range(self.A, self.C):
+                accx = (self.points[i][(j+1)%self.C].pos.z - 2*self.points[i][j].pos.z +self.points[i][(j-1)%self.C].pos.z)/self.dx**2
+                accy = (self.points[(i+1)%self.B][j].pos.z - 2*self.points[i][j].pos.z +self.points[(i-1)%self.B][j].pos.z)/self.dx**2
                 self.points[i][j].vel += (accx + accy)*self.dt
 
     def pos_update(self):
@@ -184,6 +200,7 @@ if __name__ == '__main__':
     final_squares = []
     gen = Generator(1.3)
     sim = Waves(gen.dump())
+    sleep(1)
     while True:
         rate(100)
         sim.step()

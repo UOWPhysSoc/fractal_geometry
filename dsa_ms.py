@@ -1,6 +1,7 @@
 from visual import *
 import numpy as np
 import random
+<<<<<<< HEAD
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -10,6 +11,11 @@ matplotlib.rcParams['ytick.direction'] = 'out'
 
 class Mesh():
     def __init__(self, corners, iter_max = 2, chaos=1, h_init = [[0,0],[0,0]]):
+=======
+
+class Mesh():
+    def __init__(self, corners, iter_max = 2, h_init = [[0,0],[0,0]]):
+>>>>>>> origin/master
         """
         format of corners:
         [[upper left, upper right],
@@ -25,8 +31,11 @@ class Mesh():
         self.dims = len(self)
         self.iter_level = 0         # intial level of iteration (increases to self.iter_max)
         self.iter_max = iter_max
+<<<<<<< HEAD
         self.chaos = chaos
         random.seed()
+=======
+>>>>>>> origin/master
 
     def create_midpoints(self, pts):
         # pts are the points we are finding the midpoint of
@@ -63,7 +72,11 @@ class Mesh():
                 curr_pt.neighbors['NE'] = self.mesh[y-2][x]
                 curr_pt.neighbors['SW'] = self.mesh[y][x-2]
                 curr_pt.neighbors['SE'] = self.mesh[y][x]
+<<<<<<< HEAD
                 curr_pt.set_height(self.iter_level, self.chaos)
+=======
+                curr_pt.set_height(self.iter_level)
+>>>>>>> origin/master
                 # outer points:
                 for coord in [(-1,-2), (-2,-1), (0,-1), (-1, 0)]:
                     curr_pt = self.mesh[y+coord[1]][x+coord[0]]
@@ -83,7 +96,11 @@ class Mesh():
                         curr_pt.neighbors['S'] = self.mesh[y+coord[1]+1][x+coord[0]]
                     except:
                         pass
+<<<<<<< HEAD
                     curr_pt.set_height(self.iter_level, self.chaos)
+=======
+                    curr_pt.set_height(self.iter_level)
+>>>>>>> origin/master
                         
 
     def fill_points(self):
@@ -112,11 +129,15 @@ class Mesh():
             self.iter_level += 1
 
     def create_spheres(self):
+<<<<<<< HEAD
         # creates the sphere generated in vpython (note: calling this will cause vpython to run!)
+=======
+>>>>>>> origin/master
         for x in range(self.dims):
             for y in range(self.dims):
                 self.mesh[y][x].gen_sphere()
 
+<<<<<<< HEAD
     def get_heights(self):
         # returns an array with just height values
         h_map = []
@@ -144,6 +165,8 @@ class Mesh():
             fig.colorbar(surf, shrink=0.5, aspect=5)
         fig.show()
         
+=======
+>>>>>>> origin/master
     def __call__(self):
         return self.mesh
 
@@ -169,9 +192,15 @@ class Point():
                           'W':None, 'E':None,
                           'SW':None, 'S':None, 'SE':None}
 
+<<<<<<< HEAD
     def set_height(self, i, h):
         # i is the number of the iteration, h is a modifier to set how much variation there is in the random numbers
         rand = random.uniform(-h*2**(-i), h*2**(-i))
+=======
+    def set_height(self, i):
+        # i is the number of the iteration
+        rand = random.uniform(-2**(-i), 2**(-i))
+>>>>>>> origin/master
         val = 0
         count = 0
         for direc in self.neighbors:
@@ -194,6 +223,7 @@ class Point():
     def __call__(self):
         return (self.x, self.y, self.z)
 
+<<<<<<< HEAD
 i_max = 5
 plotter = 'mpl'
 c = [[(-1,1), (1,1)], [(-1,-1), (1,-1)]]
@@ -203,3 +233,10 @@ if plotter == 'mpl':
     a.plot('3D')
 elif plotter == 'vpython':
     a.create_spheres()
+=======
+
+c = [[(0,1), (1,1)], [(0,0), (1,0)]]
+a = Mesh(c, iter_max=4)
+a.iterate()
+a.create_spheres()
+>>>>>>> origin/master
