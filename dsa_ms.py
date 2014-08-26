@@ -68,22 +68,58 @@ class Mesh():
                 for coord in [(-1,-2), (-2,-1), (0,-1), (-1, 0)]:
                     curr_pt = self.mesh[y+coord[1]][x+coord[0]]
                     try:
-                        curr_pt.neighbors['N'] = self.mesh[y+coord[1]-1][x+coord[0]]
+                        x_d = x+coord[0]
+                        y_d = y+coord[1]-1
+                        if x_d >= 0 and y_d >= 0:
+                            curr_pt.neighbors['N'] = self.mesh[y_d][x_d]
+                        else:
+                            pass
                     except:
                         pass
                     try:
-                        curr_pt.neighbors['W'] = self.mesh[y+coord[1]][x+coord[0]-1]
+                        x_d = x+coord[0]-1
+                        y_d = y+coord[1]
+                        if x_d >= 0 and y_d >= 0:
+                            curr_pt.neighbors['W'] = self.mesh[y_d][x_d]
+                        else:
+                            pass
                     except:
                         pass
                     try:
-                        curr_pt.neighbors['E'] = self.mesh[y+coord[1]][x+coord[0]+1]
+                        x_d = x+coord[0]+1
+                        y_d = y+coord[1]
+                        if x_d >= 0 and y_d >= 0:
+                            curr_pt.neighbors['E'] = self.mesh[y_d][x_d]
+                        else:
+                            pass
                     except:
                         pass
                     try:
-                        curr_pt.neighbors['S'] = self.mesh[y+coord[1]+1][x+coord[0]]
+                        x_d = x+coord[0]
+                        y_d = y+coord[1]+1
+                        if x_d >= 0 and y_d >= 0:
+                            curr_pt.neighbors['S'] = self.mesh[y_d][x_d]
+                        else:
+                            pass
                     except:
                         pass
                     curr_pt.set_height(self.iter_level, self.chaos)
+
+    def give_final_neighbors(self):
+        c_pts = {'NW':(-1,-1), 'N':(0, -1), 'NE':(1, -1), 'W':(-1, 0), 'E':(1, 0), 'SW':(-1, 1), 'S':(0, 1), 'SE':(1, 1)}
+        for x in range(0, self.dims):
+            for y in range(0, self.dims):
+                curr_pt = self.mesh[y][x]
+                for direc in c_pts:
+                    x_d = x+c_pts[direc][0]
+                    y_d = y+c_pts[direc][1]
+                    if x_d >= 0 and y_d >= 0:
+                        try:
+                            curr_pt.neighbors[direc] = self.mesh[y+c_pts[direc][1]][x+c_pts[direc][0]]
+                        except:
+                            curr_pt.neighbors[direc] = None
+                    else:
+                        curr_pt.neighbors[direc] = None
                         
     def fill_points(self):
         for x in range(2, self.dims, 2):
@@ -191,15 +227,15 @@ class Point():
         return "Point at: ({0}, {1}, {2})".format(self.x, self.y, self.z)
 
     def __call__(self):
-        return (self.x, self.y, self.z)
+        return (self.x, self.y, self.z)       
 
-i_max = 5
+i_max = 6
 plotter = 'mpl'
 c = [[(-1,1), (1,1)], [(-1,-1), (1,-1)]]
 a = Mesh(c, iter_max=i_max, chaos=0.8)
 a.iterate()
+a.give_final_neighbors()
 if plotter == 'mpl':
-    a.plot('flat')
+    a.plot('3D')
 elif plotter == 'vpython':
     a.create_spheres()
-
