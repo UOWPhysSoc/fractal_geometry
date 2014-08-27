@@ -9,11 +9,12 @@ matplotlib.rcParams['xtick.direction'] = 'out'
 matplotlib.rcParams['ytick.direction'] = 'out'
 
 class Mesh():
-    def __init__(self, corners, iter_max = 2, chaos=1, h_init = [[0,0],[0,0]]):
+    def __init__(self, corners, iter_max = 2, chaos=1, h_init = [[0,0],[0,0]], geometry="f"):
         """
         format of corners:
         [[upper left, upper right],
          [lower left, lower right]]
+        geometry can be either 'f' (flat) or 's' (spherical)
         """
         self.corners = corners
         self.heights = h_init
@@ -26,6 +27,10 @@ class Mesh():
         self.iter_level = 0         # intial level of iteration (increases to self.iter_max)
         self.iter_max = iter_max
         self.chaos = chaos
+        self.geometry = geometry    # if this is 's' we want to wrap around in the x-direction (ie. set row[0] = row[-1])
+        if self.geometry == 's':
+            for row in self.mesh:
+                row[0].z = row[-1].z
         random.seed()
 
     def create_midpoints(self, pts):
@@ -40,6 +45,7 @@ class Mesh():
         p_W = Point((pts[0].x, 0.5*(pts[0].y + pts[2].y), None))
         p_E = Point((pts[1].x, 0.5*(pts[1].y + pts[3].y), None))
         p_S = Point((0.5*(pts[2].x + pts[3].x), pts[2].y, None))
+            
         return {'N':p_N, 'W':p_W, 'E':p_E, 'S':p_S, 'C':p_C}
 
     def expand_mesh(self):
@@ -67,6 +73,18 @@ class Mesh():
                 # outer points:
                 for coord in [(-1,-2), (-2,-1), (0,-1), (-1, 0)]:
                     curr_pt = self.mesh[y+coord[1]][x+coord[0]]
+                    # first we will do some stuff that fill only apply for a spherical mesh:
+                    if self.geometry == 's':
+                        if y+coord[1] == 0:
+                            # in this case we are at the top pole of the sphere
+                            curr_pt.z = self.mesh[0][0].z
+                        elif y+coord[1] == self.dims - 1:
+                            # in this case we are at the bottom pole of the sphere
+                            curr_pt.z = self.mesh[0][self.dims - 1].z
+                        if x+coord[0] == self.dims - 1:
+                            # in this case our point is on the right side and will need the z value of the point with theta = 0 value
+                            curr_pt.z = self.mesh[y+coord[1]][0].z
+                    # north of point
                     try:
                         x_d = x+coord[0]
                         y_d = y+coord[1]-1
@@ -76,15 +94,20 @@ class Mesh():
                             pass
                     except:
                         pass
+                    # west of point
                     try:
                         x_d = x+coord[0]-1
                         y_d = y+coord[1]
                         if x_d >= 0 and y_d >= 0:
                             curr_pt.neighbors['W'] = self.mesh[y_d][x_d]
                         else:
-                            pass
+                            if self.geometry == 'f':
+                                pass
+                            elif self.geometry == 's':
+                                curr_pt.neighbors['W'] = self.mesh[y_d][-2]
                     except:
                         pass
+                    # east of point
                     try:
                         x_d = x+coord[0]+1
                         y_d = y+coord[1]
@@ -93,7 +116,11 @@ class Mesh():
                         else:
                             pass
                     except:
-                        pass
+                        if self.geometry == 'f':
+                            pass
+                        else:
+                            curr_pt.neighbors['E'] = self.mesh[y_d][1]
+                    # south of point
                     try:
                         x_d = x+coord[0]
                         y_d = y+coord[1]+1
@@ -103,7 +130,9 @@ class Mesh():
                             pass
                     except:
                         pass
-                    curr_pt.set_height(self.iter_level, self.chaos)
+                    if curr_pt.z == None:
+                        # check whether we have already set the z height (eg, for stitching purposes in the spherical mesh)
+                        curr_pt.set_height(self.iter_level, self.chaos)
 
     def give_final_neighbors(self):
         c_pts = {'NW':(-1,-1), 'N':(0, -1), 'NE':(1, -1), 'W':(-1, 0), 'E':(1, 0), 'SW':(-1, 1), 'S':(0, 1), 'SE':(1, 1)}
@@ -178,6 +207,16 @@ class Mesh():
             surf = ax.plot_surface(X, Y, self.get_heights(), cmap=plt.cm.RdBu, antialiased=False, linewidth=0, rstride=1, cstride=1)    # change/remove rstride & cstride for i_max > about 5
             fig.colorbar(surf, shrink=0.5, aspect=5)
         fig.show()
+
+    def spheriMesh(self):
+        # this will convert the flat mesh to a spherical mesh
+        # we will assume x is theta, y is u
+        for row in self.mesh:
+            for pt in row:
+                x = np.sqrt(1 - pt.y**2)*np.cos(pt.x)*(1+pt.z)
+                y = np.sqrt(1 - pt.y**2)*np.sin(pt.x)*(1+pt.z)
+                z = pt.y*(1+pt.z)
+                pt.x, pt.y, pt.z = x, y, z
         
     def __call__(self):
         return self.mesh
@@ -227,15 +266,17 @@ class Point():
         return "Point at: ({0}, {1}, {2})".format(self.x, self.y, self.z)
 
     def __call__(self):
-        return (self.x, self.y, self.z)       
+        return (self.x, self.y, self.z)
 
-i_max = 6
-plotter = 'mpl'
+i_max = 7
+plotter = 'vpython'
+s_c = [[(0,1), (2*np.pi, 1)], [(0, -1), (2*np.pi, -1)]]
 c = [[(-1,1), (1,1)], [(-1,-1), (1,-1)]]
-a = Mesh(c, iter_max=i_max, chaos=0.8)
+a = Mesh(s_c, iter_max=i_max, chaos=0.4, geometry ='s')
 a.iterate()
 a.give_final_neighbors()
+a.spheriMesh()
 if plotter == 'mpl':
-    a.plot('3D')
+    a.plot('flat')
 elif plotter == 'vpython':
     a.create_spheres()
